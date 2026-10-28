@@ -4,7 +4,7 @@ Kyros uses sandboxed Lua scripts. Scripts can react to IRC events, print or echo
 
 ## Managing scripts
 
-Open **Lua Scripts** from the toolbar. Scripts live under `%LocalAppData%\Kyros\Scripts`.
+Open **Lua Scripts** from the toolbar. Scripts live in the `Scripts` folder beside `Kyros.exe`. In a portable installation, this is `<Kyros folder>\Scripts`.
 
 - **New** creates an unloaded script.
 - **Save** saves the selected file and reloads it if it is loaded.
