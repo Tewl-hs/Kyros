@@ -1,0 +1,43 @@
+KYROS PROPRIETARY SOFTWARE LICENSE
+
+Copyright © 2026 Tewl-hs. All rights reserved.
+
+"Copyright Holder" means the owner of Kyros operating publicly under the name Tewl-hs.
+
+1. Permission to Use
+
+You are granted a limited, revocable, non-exclusive, non-transferable license to download, install, and use Kyros for personal, non-commercial purposes.
+
+2. Redistribution
+
+You may not copy, publish, distribute, sublicense, sell, rent, host, mirror, bundle, or otherwise provide Kyros or any portion of it to another person without prior written permission from the Copyright Holder. You may link others to the official Kyros release page.
+
+3. Modification and Reverse Engineering
+
+You may not modify, adapt, decompile, disassemble, reverse engineer, or create derivative works from Kyros except where applicable law expressly permits such activity despite this restriction.
+
+4. Ownership
+
+Kyros is licensed, not sold. The Copyright Holder retains all rights, title, and interest in Kyros. This license does not grant access to or rights in the Kyros source code.
+
+5. Third-Party Components
+
+Kyros may include third-party components governed by their own licenses. Those licenses apply only to their respective components. See THIRD_PARTY_NOTICES.txt.
+
+6. No Warranty
+
+KYROS IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. USE OF KYROS IS ENTIRELY AT YOUR OWN RISK.
+
+7. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR OTHER DAMAGES ARISING FROM OR RELATED TO THE INSTALLATION, USE, MISUSE, INABILITY TO USE, OR DISTRIBUTION OF KYROS, INCLUDING LOSS OF DATA, ACCOUNT ACCESS, PROFITS, OR SERVICE AVAILABILITY.
+
+8. Termination
+
+This license terminates automatically if you violate its terms. Upon termination, you must stop using Kyros and delete all copies in your possession.
+
+9. Governing Law
+
+This license is governed by the laws applicable in the Copyright Holder's jurisdiction, without regard to conflict-of-law principles.
+
+By downloading, installing, or using Kyros, you acknowledge that you have read and agree to these terms.
