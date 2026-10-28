@@ -4,6 +4,23 @@ Kyros is a Windows IRC client with configurable server profiles, connection auto
 
 This public repository contains official Kyros releases and user documentation. The application source code is maintained separately and is not published here.
 
+## Development status
+
+Kyros is under active, continuous development and receives frequent updates. Features, behavior, and configuration formats may continue to change as the application evolves.
+
+## Windows SmartScreen
+
+Kyros is not currently code-signed. Windows Defender SmartScreen, when enabled, may warn about or block the application. Only bypass this warning for a Kyros package downloaded from the [official GitHub releases](https://github.com/Tewl-hs/Kyros/releases/latest), and verify the published SHA-256 checksum when possible.
+
+If Windows marks the extracted application as blocked:
+
+1. Right-click `Kyros.exe` and select **Properties**.
+2. Open the **General** tab.
+3. Under **Security**, select **Unblock**.
+4. Select **Apply**, then **OK**.
+
+If the **Unblock** option is not present, Windows has not marked that file as blocked.
+
 ## Download
 
 Download the current version from [Latest Release](https://github.com/Tewl-hs/Kyros/releases/latest). Extract the complete portable ZIP before starting `Kyros.exe`.
