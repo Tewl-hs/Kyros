@@ -40,6 +40,7 @@ These are all user-facing changes made after the Kyros 1.1.0 release.
 
 ### Fixed
 
+- Opening the Lua Script Editor no longer depends on WPF font shaping to calculate the caret position, preventing a missing-font failure from terminating Kyros. Unexpected fatal errors are now recorded under `%LocalAppData%\Kyros\CrashLogs` and reported before the application closes.
 - Certificate warning dialogs no longer allow connection attempts to continue in the background while the user is deciding, and read-only dialog values no longer use invalid two-way WPF bindings.
 - Round-robin server hostnames are handled by the certificate presented by the endpoint actually reached; Kyros does not hardcode or silently substitute a known server address.
 - Double-clicking transcript text no longer performs transient selection or copies a word to the clipboard. It is now available as an assignable action gesture with the clicked word, line, character, and token.
