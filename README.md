@@ -14,6 +14,8 @@ Kyros requires Windows and the .NET 10 Desktop Runtime.
 
 - [User Guide](docs/USER_GUIDE.md)
 - [Lua Scripting Guide](docs/LUA_SCRIPTING.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Release Notes](RELEASE_NOTES.md)
 
 ## License
 
