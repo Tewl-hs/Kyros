@@ -25,7 +25,10 @@ If the **Unblock** option is not present, Windows has not marked that file as bl
 
 Download the current version from [Latest Release](https://github.com/Tewl-hs/Kyros/releases/latest). Extract the complete portable ZIP before starting `Kyros.exe`.
 
-Kyros requires Windows and the .NET 10 Desktop Runtime.
+## System requirements
+
+- Windows 10 or Windows 11 (64-bit).
+- The [Microsoft .NET 10 Desktop Runtime for Windows x64](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). The .NET SDK is not required.
 
 ## Documentation
 
