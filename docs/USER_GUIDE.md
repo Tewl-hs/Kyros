@@ -18,7 +18,17 @@ When **Automatically reconnect** is enabled in Connection settings, an unexpecte
 
 The sidebar contains the server window, joined channels, and direct messages. It can be collapsed with the small sidebar handle. Right-click supported transcript items and nicknames for context actions.
 
+Channel windows always use a supported channel prefix. When a provider supplies a room name without one, Kyros adds `#` for display and command routing while retaining the provider's original identifier internally. This lets a provider channel such as `#penguintat` coexist with a direct-message window named `penguintat`; `/msg #penguintat text` addresses the channel and `/msg penguintat text` addresses the direct message.
+
 The main window remembers its size, position, maximized state, selected theme, and sidebar state.
+
+### Appearance
+
+Open **Options → Appearance** to select the application theme. Each theme keeps its own font family and size choices for message input, channel transcripts, the Server transcript, private-message transcripts, and the nick list. Choose **Save fonts** to apply those choices to the selected theme. **Reset fonts** removes only that theme's typography override and restores its original font settings without changing its colors or the independent IRC palette.
+
+The IRC color palette is global and independent of the application theme. Open it with the palette button beside Lua Scripts to customize the 32 colors used by IRC formatting. Switching application themes does not change these colors. **Default** is Kyros's built-in palette and cannot be changed, removed, or reused as a saved name. Choose **Save as**, enter a name in the themed prompt, and choose **Save** to store and select the current colors in `%LocalAppData%\ColorPalettes`. Names may contain letters and numbers plus at most three single spaces. Leading and trailing spaces are removed automatically, while consecutive internal spaces are not allowed. Changing the dropdown selection previews that palette in the dialog without changing open transcripts. **Save** updates the selected named palette, **Remove** deletes it, and **Apply** activates whichever palette is selected. Save and Remove are disabled for Default.
+
+You can also change a palette entry from any input box with `/color <0-31> <hexvalue>`. The index must be a whole number from 0 through 31 and the value must contain exactly six hexadecimal digits; a leading `#` is optional. For example, `/color 0 FFFFFF` sets IRC color 0 to white. The global change is saved and existing transcript colors update immediately.
 
 ## Commands
 
@@ -43,6 +53,11 @@ Commands begin with one slash. Lua aliases and macros begin with two slashes.
 | `/quit [message]` | Quit IRC. |
 | `/set variable_name value` | Save a shared scripting variable as text. |
 | `/unset variable_name` | Remove a shared scripting variable. |
+| `/lua load scriptname` or `/lua l scriptname` | Load a Lua script. Relative names resolve inside the portable `Scripts` folder; scripts elsewhere require a full path. |
+| `/lua unload scriptname` or `/lua u scriptname` | Unload a loaded Lua script without deleting it. |
+| `/lua reload scriptname` or `/lua r scriptname` | Reload a loaded Lua script. A provider script cannot be reloaded while its provider is connected or connecting. |
+| `/color 0-31 hexvalue` | Set and save one color in the global IRC palette, for example `/color 0 FFFFFF`. |
+| `/palette load name` | Load and apply a named palette from `%LocalAppData%\ColorPalettes`, or use `Default` for Kyros's built-in colors. Put names containing spaces in quotes. |
 
 Unknown single-slash commands are sent to the IRC server. Never paste commands from an untrusted person, especially commands containing passwords or authentication tokens.
 
@@ -70,7 +85,13 @@ Passwords are protected for the current Windows user. They should still be treat
 
 ## Lua scripts
 
-Open the Lua Scripts dialog from the toolbar. New and bundled scripts remain unloaded until **Load** is selected. Saving a loaded script reloads it. If the new version has an error, Kyros reports the error and retains the previous working runtime.
+Open the Lua Scripts dialog from the toolbar. Kyros loads only explicitly selected scripts. Use **Load** to select a script from the portable `Scripts` folder, a subfolder, or another location; the picker starts in the portable Scripts folder and creates it when needed. Only one registered script may use a given filename, regardless of its folder, which keeps script selection and permissions unambiguous. The list displays the filename; hover over it to see its complete path. **Unload** stops a script, closes its sockets, revokes its network approvals, removes its registry entry, and removes it from the visible list without deleting its file. Select it with **Load** to register and load it again. Saving a loaded script reloads it. If the new version has an error, Kyros reports the error and retains the previous working runtime. Profiles belonging to an unloaded provider are retained and marked unavailable. Loading a script that registers the same provider ID and name makes those profiles usable again.
+
+Script load failures and other scripting diagnostics detected during startup are written to the Server window once it is ready. Each load error identifies the responsible script and operation; full exception details remain available in the Lua error log.
+
+Kyros treats `scripts.json` as untrusted startup input. It limits the file to 1 MiB, limits JSON nesting and the number of registrations, validates schema and paths, ignores invalid entries, and handles inaccessible files and folders without stopping application startup. A malformed or unsupported registry is preserved with a timestamped `scripts.corrupt-*.json` name when possible, then Kyros continues with a clean registry.
+
+The same lifecycle operations are available from any input box. Use `/lua load script.lua` or `/lua l script.lua` for a file in the portable `Scripts` folder. A subfolder may be included, such as `/lua l Utilities\helper.lua`. A script outside that folder requires its full path; surround a path containing spaces with double quotes. Use `/lua unload` (or `/lua u`) and `/lua reload` (or `/lua r`) with the registered script name. Kyros refuses to reload a provider script while its provider is connected or connecting; disconnect it first. Unloading remains available and performs the provider's normal disconnect cleanup.
 
 Only load scripts you trust. Scripts are sandboxed, but they can send IRC commands and messages on your behalf.
 

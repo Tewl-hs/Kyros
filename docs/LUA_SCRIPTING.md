@@ -4,32 +4,48 @@ Kyros uses sandboxed Lua scripts. Scripts can react to IRC events, print or echo
 
 ## Managing scripts
 
-Open **Lua Scripts** from the toolbar. Scripts live in the `Scripts` folder beside `Kyros.exe`. In a portable installation, this is `<Kyros folder>\Scripts`.
+Open **Lua Scripts** from the toolbar. Kyros loads only scripts that the user explicitly selects. **Load** selects an existing `.lua` file from the main `Scripts` folder, one of its subfolders, or another location. The file picker starts in `<Kyros folder>\Scripts`, and Kyros creates that folder whenever needed. Script filenames are unique across the registry: a second `weather.lua` cannot be registered even if it is in a different folder. The editor list shows only the filename; hover over it to see the complete path.
 
-- **New** creates an unloaded script.
+Scripts inside `<Kyros folder>\Scripts` are registered relative to the current Kyros executable, so the complete `Scripts` folder can be copied to a newer portable installation without retaining the old installation path. Scripts elsewhere retain their absolute paths. Active registrations are stored in `%LocalAppData%\Kyros\scripts.json`, not beside the executable.
+
+- **Load** registers and loads an existing script without copying it. Selecting a previously unloaded file loads it again.
+- **New** creates, registers, and loads a script under the main `Scripts` folder.
 - **Save** saves the selected file and reloads it if it is loaded.
-- **Load** enables a script.
-- **Unload** disables it without deleting the file.
-- **Reload** reloads all enabled scripts.
+- **Unload** stops the script, removes its registry entry and visible-list entry, closes its network resources, and revokes all of its session and persistent network approvals without deleting its file.
+- **Reload All** reloads all enabled scripts.
 
-Bundled examples are installed unloaded. Start with `getting-started.lua`.
+Missing registered scripts have their registry entries removed automatically, so a later unrelated file cannot silently inherit their enabled state. Bundled examples remain available in the Scripts folder but are not registered until the user selects one with **Load**, starting with `getting-started.lua`.
 
 ## Output and sending
 
 ```lua
 print("Shown in the server transcript")
-echo("server", "Also shown in the server transcript")
-echo("active", "Shown in the active window")
+echo("Also shown in the server transcript")
+echo("@server", "Explicitly shown in the server transcript")
+echo("@active", "Shown in the active window")
 send("JOIN #example")
 ```
 
 `send()` sends raw IRC protocol text without a trailing line break. Scripts can act as the user, so do not load untrusted scripts.
 
+`echo` routes by window kind rather than guessing from duplicate names:
+
+```lua
+echo("text")                 -- Server window
+echo("#channel", "text")   -- Existing channel window
+echo("nickname", "text")   -- Existing direct-message window
+echo("@server", "text")    -- Named Server window
+echo("@raw", "text")       -- Named Raw window
+echo("@active", "text")    -- Whichever window is active
+```
+
+An unknown or closed target falls back to the Server window. Names beginning with `@` are reserved for non-conversation windows. Bare names are always direct-message targets, so `echo("active", text)` addresses a nickname named `active`; only `echo("@active", text)` means the active window. Likewise, use `@server` for the Server window so a nickname named `server` remains addressable.
+
 ## Network sockets
 
 Sockets are asynchronous and are automatically closed when their script is unloaded or reloaded. Each script may own up to 16 sockets, individual sends are limited to 1 MiB, each socket may have at most 16 pending sends, and a script may have at most 256 pending network callbacks. A socket is closed with a visible error if its script cannot process incoming events quickly enough. Socket text is encoded and incrementally decoded as UTF-8, so a character split between network reads remains intact.
 
-Before the first exact outbound connection, UDP send, or local bind, Kyros shows a themed permission dialog identifying the script, transport, host/address, and port. **Allow for session** lasts until Kyros exits. **Always allow** is tied to the script filename and SHA-256 content fingerprint, so editing or replacing the script invalidates the approval. Denial is reported through the socket's `error` event. Use **Network Access** in the Lua Script Editor to revoke remembered permissions or clear session approvals.
+Before the first exact outbound connection, UDP send, or local bind, Kyros shows a themed permission dialog identifying the registered script, transport, host/address, and port. **Allow for session** lasts until Kyros exits. **Always allow** is tied to the script's registered path and SHA-256 content fingerprint, so editing, replacing, or moving the script invalidates the approval. Denial is reported through the socket's `error` event. Use **Network Access** in the Lua Script Editor to revoke remembered permissions or clear session approvals.
 
 TCP and TLS sockets are strictly outbound clients. Lua scripts cannot listen for or accept inbound TCP/TLS connections and cannot select their local TCP/TLS bind address or port. Only UDP sockets may bind locally, subject to an exact bind permission. UDP datagrams may contain at most 65,507 bytes.
 
@@ -129,14 +145,62 @@ The following globals are refreshed before callbacks:
 ```lua
 client.nickname
 client.active_target
+client.active
+client.version
+client.provider
+client.profile
+client.username
+client.realname
+client.status
+client.theme
+client.host
+client.connected
+client.connection_type
+client.sys_uptime
+client.client_uptime
+client.server_uptime
 
 server.ip
 server.port
 server.name
 server.network
+server.uptime
 ```
 
 `server.network` may be `nil` until the network advertises its name.
+`client.active` is `@server`, `@raw`, a channel name, or a direct-message nickname. `client.active_target` retains the command target form for compatibility. Uptime values are nonnegative milliseconds; server uptime is `0` while disconnected. For non-IRC providers, `server.ip` is empty and `server.port` is `0`. `client.version_compare(version)` returns `-1`, `0`, or `1`.
+
+## Built-in placeholders
+
+Lua macros and context-menu labels can use these case-insensitive placeholders:
+
+| Placeholder | Value |
+| --- | --- |
+| `{version}` | Current Kyros version, without a leading `v`. |
+| `{provider}` | Selected provider ID; `irc` is the default. |
+| `{profile}` | Selected connection-profile name. |
+| `{username}` | Username from Options → Identity. |
+| `{realname}` | Real name from Options → Identity. |
+| `{status}` | Current connection status text. |
+| `{sys_uptime}` | Operating-system uptime in milliseconds. |
+| `{client_uptime}` | Time since this Kyros process opened, in milliseconds. |
+| `{server_uptime}` | Time connected to the current IRC server or provider, in milliseconds; otherwise `0`. |
+| `{serverip}` | Connected IRC endpoint IP address, or empty for a provider. |
+| `{port}` | Connected IRC port, or `0` for a provider. |
+| `{host}` | Local computer hostname. |
+| `{active}` | `@server`, `@raw`, a channel name, or a direct-message nickname. |
+| `{snick}` | Selected nickname while building or invoking a nick context menu. |
+
+Use `expand(text)` when a normal Lua string needs the same expansion. During a context-menu callback, it also has access to `{snick}`:
+
+```lua
+print(expand("Kyros {version} is using {profile}"))
+
+context_menu.add("nicklist", "Check {snick}", function(e)
+    print(expand("Selected: {snick}"))
+    print(e.snick)
+end)
+```
 
 ## IRC state
 
@@ -214,6 +278,7 @@ window. Its default display is `![server]: message`.
 | Event | Description |
 | --- | --- |
 | `error` | Reports an uncaught Lua error at a Kyros script boundary. This notification cannot be canceled. |
+| `theme_changed` | Runs after the application switches to a different theme. This notification cannot be canceled. |
 | `connect` | Runs after the IRC connection is established. It has no meaningful event argument. |
 | `disconnect` | Runs when the IRC connection closes. It has no meaningful event argument. |
 | `raw` | Observes every incoming raw IRC line before specialized routing. Its callback receives the line directly as a string. |
@@ -239,7 +304,15 @@ window. Its default display is `![server]: message`.
 | `ctcp_request` | Runs for received CTCP requests and requests sent by Kyros. Canceling it affects transcript display only. |
 | `ctcp_reply` | Runs for received CTCP replies and automatic replies sent by Kyros. |
 
-Except for `error`, `connect`, `disconnect`, and `raw`, these events are cancelable with `e.prevent_default()`. Cancellation suppresses Kyros's normal transcript presentation; it does not undo network activity or internal state updates.
+Except for `error`, `theme_changed`, `connect`, `disconnect`, and `raw`, these events are cancelable with `e.prevent_default()`. Cancellation suppresses Kyros's normal transcript presentation; it does not undo network activity or internal state updates.
+
+The `theme_changed` event runs only when the selected application theme actually changes, not when Kyros reapplies font resources for the current theme. The independent IRC palette does not trigger this event. `e.theme` contains the newly applied theme name and `e.previous_theme` contains the prior theme name:
+
+```lua
+on("theme_changed", function(e)
+    print("Theme changed from " .. e.previous_theme .. " to " .. e.theme)
+end)
+```
 
 The `numeric` event runs for every numeric IRC reply, including replies handled by dedicated client features such as LIST and MOTD. `e.numeric` is the three-character numeric as text, `e.line` and `e.data` contain the complete raw protocol line, and `e.automatic_who` identifies WHO replies generated by Kyros background membership maintenance:
 
@@ -442,6 +515,59 @@ local huge = bigint.multiply("999999999999999999", "1000")
 
 Each library provides `add`, `subtract`, `multiply`, `divide`, and `compare`. `decimal` also provides `round(value, places)`, with zero through 28 decimal places. Arithmetic results are strings; `compare` returns `-1`, `0`, or `1`. Invalid input, division by zero, and `int64` or `decimal` overflow produce Lua errors.
 
+## Dates and times
+
+Kyros uses ISO-8601 timestamps so scripts do not depend on Windows regional date settings:
+
+```lua
+local local_now = datetime.now()
+local utc_now = datetime.utc_now()
+local unix_seconds = datetime.unix()
+local unix_milliseconds = datetime.unix_ms()
+
+local parsed = datetime.parse("2026-10-30T15:30:00-05:00")
+local later = datetime.add(parsed, { days = 2, hours = 3, minutes = 15 })
+local display = datetime.format(later, "yyyy-MM-dd HH:mm:ss zzz")
+local difference = datetime.diff(parsed, later)
+local order = datetime.compare(parsed, later) -- -1
+local restored = datetime.from_unix(unix_seconds)
+```
+
+`datetime.add` accepts `years`, `months`, `days`, `hours`, `minutes`, `seconds`, and `milliseconds`. `datetime.diff(first, second)` describes `second - first` with total milliseconds/seconds and component days, hours, minutes, seconds, and milliseconds.
+
+## Timers
+
+Timers run callbacks without blocking the client:
+
+```lua
+local once = timer.after(1000, function()
+    print("One second passed")
+end)
+
+local repeating
+repeating = timer.every(30000, function()
+    print("Periodic work")
+end)
+
+timer.cancel(repeating)
+```
+
+One-shot durations must be whole milliseconds from 1 through 86,400,000; repeating timers have a 50-millisecond minimum to protect the UI thread. A script may own up to 32 active timers. All of its timers are canceled automatically when it is unloaded or reloaded.
+
+## Encoding, identifiers, and hashing
+
+```lua
+local request_id = uuid.new()
+local encoded = base64.encode("hello")
+local original = base64.decode(encoded)
+local query = url.encode("Birmingham, AL")
+local decoded = url.decode(query)
+local digest = crypto.sha256("message")
+local signature = crypto.hmac_sha256("secret key", "message")
+```
+
+Base64 operates on strict UTF-8 text. Hashes are returned as uppercase hexadecimal text. Utility inputs are limited to 1 MiB.
+
 ## Command functions
 
 Register functions that may be evaluated inside `//command` arguments:
@@ -467,10 +593,17 @@ Variables resolve first, followed by command functions. Only functions registere
 ```lua
 local message = format.bold .. "Bold" .. format.bold
 message = message .. " " .. format.color(4) .. "colored" .. format.reset
-echo("active", message)
+echo("@active", message)
 ```
 
 Available values include `format.bold`, `format.italic`, `format.underline`, `format.strike`, `format.reverse`, `format.reset`, and `format.color(foreground [, background])`. `format.reverse` emits the `\x12` reverse control; Kyros also accepts `\x16` when received for compatibility.
+
+Use either `strip(text)` or `format.strip(text)` to remove mIRC numeric/hex colors and bold, italic, underline, strike, reverse, monospace, and reset controls:
+
+```lua
+local plain = strip(format.bold .. format.color(4) .. "Alert" .. format.reset)
+-- plain is "Alert"
+```
 
 ## Context menus
 
@@ -654,6 +787,63 @@ token.split("one two three")       -- table indexed from 1
 
 Providers use immediate local echo by default. Set `local_echo = false` in the provider definition when the service sends the authoritative copy back with metadata or may reject a send; the provider must then publish the sender's own message through `handle:message`.
 
+### Minimal provider
+
+A provider definition requires two identifying values and three functions:
+
+| Member | Required | Description |
+| --- | --- | --- |
+| `id` | Yes | Stable, unique identifier used by saved connection profiles. It must begin with a lowercase letter or number and may contain lowercase letters, numbers, periods, underscores, and hyphens. `irc` is reserved by Kyros. |
+| `name` | Yes | Unique, human-readable provider name shown in connection dialogs. Provider names are compared without regard to capitalization. |
+| `connect(profile)` | Yes | Starts the provider connection. Call `handle:connected(display_name)` only after the connection is ready. |
+| `disconnect()` | Yes | Gives the provider an opportunity to sign out or stop provider-specific work. The function may be empty; Kyros closes the script's network resources after it returns. |
+| `send(target, message)` | Yes | Sends ordinary conversation text to the requested target. |
+
+```lua
+local handle
+
+handle = provider.register({
+    id = "example",
+    name = "Example Provider",
+
+    connect = function(profile)
+        -- Open sockets or begin API requests here.
+        -- Report readiness only after the connection succeeds.
+        handle:connected(profile.name or "User")
+    end,
+
+    disconnect = function()
+        -- This may be empty. Kyros still closes network resources.
+    end,
+
+    send = function(target, message)
+        -- Send the message through the service here.
+    end
+})
+```
+
+Registering a provider makes it available to connection profiles; it does not connect immediately. `profile.name` contains the Kyros connection-profile name. Any declared provider fields are also supplied in `profile` using their field keys.
+
+Both provider IDs and provider names must be unique among loaded scripts. Kyros rejects a conflicting provider instead of allowing it to replace or impersonate the provider used by an existing saved profile.
+
+If `connect` fails, do not call `handle:connected`. Report useful progress with `handle:status`, or let a Lua error reach Kyros so it can identify the provider script and operation. A service-initiated disconnect should call `handle:disconnected(reason)`. When Kyros initiates disconnection, it calls `disconnect()` and then guarantees resource cleanup even if that function is empty or raises an error.
+
+All other provider members are optional. Add `fields` for generated profile settings, `action` for `/me`, `join` and `part` for conversations, `request_motd` and `request_channel_list` for those toolbar features, `oauth` for authorization-code authentication, and `local_echo = false` when the service returns the authoritative copy of sent messages.
+
+### Script lifecycle commands
+
+Scripts may also be managed from any Kyros input box:
+
+| Command | Description |
+| --- | --- |
+| `/lua load <scriptname>` or `/lua l <scriptname>` | Registers and loads a script. A relative name is resolved inside the portable `Scripts` folder. |
+| `/lua unload <scriptname>` or `/lua u <scriptname>` | Unloads the script, removes its registry entry, closes its network resources, and revokes its network approval without deleting the file. |
+| `/lua reload <scriptname>` or `/lua r <scriptname>` | Reloads the current file while retaining the previous working runtime if the new file fails. |
+
+Use a path relative to `Scripts` for scripts in that folder or its subfolders. Scripts elsewhere require an absolute path, and paths containing spaces should be surrounded with double quotes. A script providing the active connected or connecting provider cannot be reloaded because doing so would replace the code handling that live connection. Disconnect or unload it first. An active provider may be unloaded; Kyros calls its `disconnect` function and then guarantees network cleanup.
+
+### Provider with profile fields and optional features
+
 ```lua
 local my_provider
 my_provider = provider.register({
@@ -675,7 +865,15 @@ my_provider = provider.register({
         -- Send a logical chat message through the service.
     end,
     join = function(target) end, -- optional
-    part = function(target) end  -- optional
+    part = function(target) end, -- optional
+    request_motd = function() -- optional
+        my_provider:motd("Welcome to Example Chat")
+    end,
+    request_channel_list = function() -- optional
+        my_provider:channel_list_begin()
+        my_provider:channel_list_entry("general", 125, "General discussion")
+        my_provider:channel_list_end()
+    end
 })
 ```
 
@@ -693,9 +891,17 @@ Provider handle functions:
 - `handle:close(conversation, direct)` closes a provider-owned conversation without sending another part request.
 - `handle:topic(conversation, text)` updates a channel conversation's topic and title.
 - `handle:users(conversation, users)` replaces the member list. Entries may be names or `{ name = "...", address = "..." }` tables.
+- `handle:motd(text)` supplies the provider's message of the day. The text may contain multiple lines.
+
+Provider channel windows always have an IRC-style channel prefix in Kyros. If a provider publishes a non-direct conversation named `penguintat`, Kyros displays it as `#penguintat`; names that already begin with a supported standard or IRCX channel prefix are retained. Kyros keeps the provider's original conversation identifier internally and passes `penguintat`—not the added `#penguintat`—back to that provider's send, action, part, topic, and member operations. Direct-message names remain unprefixed. Consequently `/msg #penguintat text` targets the channel window while `/msg penguintat text` targets the direct-message window.
+- `handle:channel_list_begin()` clears the previous provider channel list and starts an incremental update.
+- `handle:channel_list_entry(name, members, topic, modes)` adds or replaces one channel-list entry. `topic` and `modes` are optional.
+- `handle:channel_list_end()` completes and sorts the provider channel list.
 - `handle:update_secret(field, value)` replaces a declared secret in the active connection profile using protected storage. This is intended for rotated OAuth access and refresh tokens.
 
-Normal conversation text and `/msg` call `send`. `/join` and `/part` call their optional callbacks. A provider should call `open` after a successful join and `close` after a successful part. IRC-only commands are rejected instead of being sent to a provider. Unloading or reloading the active provider script disconnects its active session.
+Normal conversation text and `/msg` call `send`. `/join` and `/part` call their optional callbacks. A provider should call `open` after a successful join and `close` after a successful part. IRC-only commands are rejected instead of being sent to a provider. Unloading or reloading the active provider script calls its `disconnect` callback before Kyros force-closes its network resources. Its connection profiles and open conversation history are retained, but the profiles remain unavailable until a loaded script registers the same provider ID again.
+
+Defining `request_motd` or `request_channel_list` enables the corresponding Kyros toolbar action for that provider. Providers that omit an operation leave its toolbar button disabled. `/list` uses `request_channel_list` when available. Selecting an entry joins it through the provider's existing `join` callback. A provider that uses a custom IRC transport may implement these operations from IRC numerics, while API-based providers may translate their own service data into the same protocol-neutral results.
 
 Providers may define `action(target, text)` to support `/me` and `/action`. If omitted, Kyros reports that the selected provider does not support actions.
 
@@ -719,6 +925,8 @@ Authorization and token URLs must use HTTPS. Redirects must use an explicit loop
 ## Error handling
 
 Kyros catches errors at script boundaries. Load, event, alias, menu, dialog, storage, regex, and command-function failures are reported in the server transcript with a Lua prefix. One failing event callback does not close the client, and a failing `//command` is stopped rather than partially executed. Most scripts do not need additional error handling.
+
+Errors found while scripts are loading during application startup are retained until the Server window is available, so an early failure is not lost before the interface subscribes to scripting events. Repeated identical startup diagnostics are displayed once.
 
 Scripts can observe uncaught Lua errors with the `error` event:
 

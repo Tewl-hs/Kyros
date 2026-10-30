@@ -1,3 +1,42 @@
+# Kyros 1.1.2 Release Notes
+
+Released October 30, 2026.
+
+### Added
+
+- Added `/color <0-31> <hexvalue>` to validate, save, and immediately apply a global IRC palette color.
+- Added named IRC palette saving and selection under `%LocalAppData%\ColorPalettes`, including protected built-in Default colors, update/remove actions, remembered selection, and `/palette load <name>` for applying a saved palette from any conversation.
+- Added a non-cancelable Lua `theme_changed` event with the newly selected and previous application theme names.
+- Added Lua client/profile/status/endpoint context values and built-in macro placeholders for version, provider, profile, identity, connection status, system/client/server uptime, endpoint, hostname, active window, and selected context-menu nickname.
+- Added Lua ISO-8601 date/time calculations, unload-safe one-shot and repeating timers, UUID generation, URL and Base64 helpers, SHA-256/HMAC-SHA256 helpers, semantic version comparison, and mIRC formatting removal.
+- Expanded Lua `echo` with a one-argument Server form, explicit `@server`, `@raw`, and `@active` named-window targets, channel/direct-message routing by prefix, and Server fallback for missing windows. Bare names—including `active` and `server`—remain available as direct-message nicknames.
+- Lua providers may optionally supply a message of the day and an incremental channel list. Kyros enables those toolbar actions only when the active provider implements the corresponding capability.
+- The Lua Script Editor now registers scripts explicitly with **Load**. **Unload** stops the script and removes its registration without deleting its file, so the separate Remove action is no longer needed. The file picker defaults to the portable `Scripts` folder, while registered scripts may live there, in its subfolders, or in an external location.
+- Fatal application errors are recorded under `%LocalAppData%\Kyros\CrashLogs` and reported before Kyros closes.
+
+### Changed
+
+- IRC formatting colors now use one global palette independent of the application theme. Existing installations import the palette associated with the currently selected theme during migration.
+- Provider channel windows now require an IRC-style prefix. Kyros adds `#` to unprefixed provider room names for display and command routing while preserving the provider's original conversation identifier, allowing a channel and direct message with the same base name to coexist unambiguously.
+- Active script registrations are stored in `%LocalAppData%\Kyros\scripts.json`. Scripts under the portable `Scripts` folder use application-relative paths, while external scripts retain absolute paths. Unloading removes the registration and revokes its session and persistent network access.
+- Unloading an active provider now invokes its disconnect callback before forced network cleanup. Provider profiles and conversation history are retained, unavailable providers cannot be connected, and loading the same provider ID restores the saved profiles.
+- The Lua scripting guide now includes a minimal provider example, a required-member reference, and provider connection and cleanup lifecycle guidance.
+- Added `/lua load|l`, `/lua unload|u`, and `/lua reload|r` client commands with Scripts-folder path resolution and protection against reloading a provider that owns the active connection.
+- Script filenames are now unique across all registered locations, provider display names are protected from duplicates as well as provider IDs, and the Script Editor shows filenames with full paths available on hover.
+- Script load failures and other Lua diagnostics raised during startup are retained and displayed in the Server window once the interface is ready.
+- Script registry startup loading is hardened against malformed or oversized JSON, excessive nesting or entries, invalid paths and schemas, inaccessible files, and unreadable script storage. Invalid registries are preserved when possible and Kyros continues safely.
+- The application Theme Editor and toolbar theme selector were removed. Theme selection and per-theme font family/size controls now live in an Appearance options tab with independent reset support, while the standalone IRC Palette dialog is available from the left toolbar actions.
+- Existing script installations migrate once from `.enabled-scripts`. Only enabled scripts are registered, and missing script registrations are removed, preventing a later replacement from silently inheriting enabled state.
+- Double-clicking a supported channel token activates its existing window or joins it through IRC or the active provider when connected.
+- IRCX `%#` and `%&` channels are recognized only after the server confirms IRCX support; ordinary channel prefixes continue to follow the server's advertised `CHANTYPES`.
+- Release publishing uses an explicit allowlist of public example scripts and removes user state, logs, script data, debug symbols, and local build paths.
+
+### Fixed
+
+- Opening the Lua Script Editor no longer depends on WPF font shaping to calculate the caret position, preventing a missing-font failure from terminating Kyros.
+
+---
+
 # Kyros 1.1.1 Release Notes
 
 Released October 28, 2026.

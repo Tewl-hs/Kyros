@@ -51,15 +51,17 @@ user explicitly chooses to leave it.
 ### Appearance and themes
 
 Application themes are resource dictionaries made from semantic tokens such as
-window, sidebar, conversation, input, primary text, secondary text, accent,
-selection, error, and presence colors. Views consume semantic resources rather
-than literal colors. A theme can also define chat font family and size, density,
-corner radius, and optional high-contrast behavior. Built-in light, dark, and
-system-following themes come first; user theme files can be added later.
+window, sidebar, conversation, input, primary text, secondary text, accent, and
+selection colors. Views consume semantic resources rather than literal colors.
+Options provides theme selection and a separate per-theme typography override
+for message input, channel, server, private-message, and nick-list fonts and
+sizes. Resetting typography removes that override without changing theme colors.
 
 Theme changes are applied at runtime and persisted independently from network
-profiles and Lua scripts. IRC formatting colors are mapped through the active
-theme so they remain readable.
+profiles and Lua scripts. The global 32-color IRC formatting palette is edited
+through its own dialog and remains independent of application themes. Named
+palette files are stored in `%LocalAppData%\ColorPalettes` and can be loaded
+from the dialog or the `/palette load` client command.
 
 ### Lua scripting
 
