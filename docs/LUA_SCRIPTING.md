@@ -287,7 +287,7 @@ window. Its default display is `![server]: message`.
 | `ping` | Runs when an incoming `PING` line is considered for display. Canceling it does not affect protocol handling. |
 | `pong` | Runs when an incoming `PONG` line is considered for display. Canceling it does not affect protocol handling. |
 | `text` | Runs for incoming and locally sent channel or direct messages. |
-| `server_text` | Runs when a server or service sends a `PRIVMSG` to a channel or nickname. |
+| `server_text` | Runs when a server or service sends a `PRIVMSG` to a channel or nickname. Includes `welcome = true` when a channel sends a message to itself. |
 | `action` | Runs for incoming and locally sent `/me` actions, with the same direction fields as `text`. |
 | `join` | Runs when any user, including the local user, joins a channel. |
 | `part` | Runs when a user leaves a channel with `PART`. |
@@ -562,11 +562,12 @@ local encoded = base64.encode("hello")
 local original = base64.decode(encoded)
 local query = url.encode("Birmingham, AL")
 local decoded = url.decode(query)
+local legacy_digest = crypto.md5("message")
 local digest = crypto.sha256("message")
 local signature = crypto.hmac_sha256("secret key", "message")
 ```
 
-Base64 operates on strict UTF-8 text. Hashes are returned as uppercase hexadecimal text. Utility inputs are limited to 1 MiB.
+Base64 operates on strict UTF-8 text. Hashes are returned as uppercase hexadecimal text. `crypto.md5` is provided only for compatibility with legacy protocols that require MD5; it should not be used for new password storage or security designs. Utility inputs are limited to 1 MiB.
 
 ## Command functions
 
@@ -885,6 +886,7 @@ Provider handle functions:
 - `handle:disconnected(reason)` marks it closed; `reason` is optional.
 - `handle:status(text)` writes provider status in the server transcript.
 - `handle:raw(text, outgoing)` publishes sanitized provider protocol traffic to the Raw window. Providers must not include access tokens, authorization headers, secrets, or other credentials. `outgoing` defaults to `false`.
+- `handle:irc(line)` injects one normalized incoming IRC protocol line into Kyros's native IRC parser. This is intended for protocol adapters that translate a custom or IRC-derived service into canonical IRC. The normal IRC event pipeline then owns conversation windows, nicklists, topics, numerics, Lua IRC events, and transcript themes. The line cannot contain CR, LF, or NUL and is limited to 32 KiB.
 - `handle:message(conversation, sender, text, direct)` publishes an incoming message. Set `direct` to `true` for a private-message window. Existing scripts may continue using this form.
 - `handle:message(conversation, sender, text, options)` may instead receive an options table with `direct`, `color` (`#RRGGBB`), `badges` (an array of short text labels), `action`, and `message_id`. Kyros renders colors and badge labels as transcript text, formats actions like `/me`, and suppresses duplicate non-empty message IDs.
 - `handle:open(conversation, direct)` opens a conversation. New channel conversations take focus; direct-message conversations open in the background.

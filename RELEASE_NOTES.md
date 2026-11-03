@@ -1,3 +1,26 @@
+# Kyros 1.1.3 Release Notes
+
+Released November 3, 2026.
+
+### Added
+
+- Lua providers can inject a normalized protocol line through `handle:irc(line)`, allowing custom and IRC-derived services to translate their traffic into Kyros's native IRC pipeline. Injected lines use the normal conversation, nicklist, topic, numeric, Lua-event, and transcript-theme handling and are validated as one non-empty line of at most 32 KiB without CR, LF, or NUL characters.
+- Added `crypto.md5(text)` for compatibility with legacy protocols that explicitly require MD5. It returns uppercase hexadecimal text and is documented as unsuitable for new password storage or security designs.
+- The `server_text` Lua event now reports `welcome = true` when a channel sends a message to itself.
+
+### Changed
+
+- Provider connections now dispatch the standard Lua `connect` and `disconnect` events, and Lua nickname context uses the authenticated provider identity while a provider is connected.
+- Auto Join accepts supported IRCX `%#` and `%&` channel names without depending on capabilities learned from the currently connected server.
+- The bundled xvaliant theme now gives non-user events a consistent accented, bracketed label; distinguishes welcome and server messages; formats numeric and numeric-error codes consistently; displays readable topic-set timestamps; and identifies the user, service, or server responsible for a live topic change.
+
+### Fixed
+
+- Channel-owned welcome messages are no longer presented as ordinary server messages or routed as private conversations.
+- Auto Join validation messages now wrap beside the Remove button instead of being covered and cut off.
+
+---
+
 # Kyros 1.1.2 Release Notes
 
 Released October 30, 2026.
