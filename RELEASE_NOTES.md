@@ -12,6 +12,7 @@ Released November 3, 2026.
 
 ### Changed
 
+- Fresh portable installations now register and load the bundled `xvaliant-theme.lua` automatically, and existing version-1 script registries receive it through a one-time migration. Unloading xValiant afterward is respected; provider scripts remain excluded from the public package.
 - IRCv3 typing-indicator `TAGMSG` traffic is muted from the Server transcript while remaining available in the Raw window. Other unsupported non-numeric commands receive a readable default fallback, a cancelable Lua `unsupported` event, and xValiant formatting.
 - Existing Lua event fields and mIRC-style `e:get(...)` token positions remain compatible when incoming lines contain IRCv3 tags.
 - Custom providers that inject ordinary IRC or IRCv3 through `handle:irc(line)` use the same parser and Lua event contract as native IRC connections. Providers retain control of capability negotiation on sockets they own.

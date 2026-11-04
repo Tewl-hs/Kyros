@@ -4,7 +4,7 @@ Kyros uses sandboxed Lua scripts. Scripts can react to IRC events, print or echo
 
 ## Managing scripts
 
-Open **Lua Scripts** from the toolbar. Kyros loads only scripts that the user explicitly selects. **Load** selects an existing `.lua` file from the main `Scripts` folder, one of its subfolders, or another location. The file picker starts in `<Kyros folder>\Scripts`, and Kyros creates that folder whenever needed. Script filenames are unique across the registry: a second `weather.lua` cannot be registered even if it is in a different folder. The editor list shows only the filename; hover over it to see the complete path.
+Open **Lua Scripts** from the toolbar. On first run, Kyros registers and loads the bundled `xvaliant-theme.lua`; version-1 script registries receive the same default through a one-time migration. All other scripts load only when the user explicitly selects them. **Load** selects an existing `.lua` file from the main `Scripts` folder, one of its subfolders, or another location. The file picker starts in `<Kyros folder>\Scripts`, and Kyros creates that folder whenever needed. Script filenames are unique across the registry: a second `weather.lua` cannot be registered even if it is in a different folder. The editor list shows only the filename; hover over it to see the complete path.
 
 Scripts inside `<Kyros folder>\Scripts` are registered relative to the current Kyros executable, so the complete `Scripts` folder can be copied to a newer portable installation without retaining the old installation path. Scripts elsewhere retain their absolute paths. Active registrations are stored in `%LocalAppData%\Kyros\scripts.json`, not beside the executable.
 
@@ -14,7 +14,7 @@ Scripts inside `<Kyros folder>\Scripts` are registered relative to the current K
 - **Unload** stops the script, removes its registry entry and visible-list entry, closes its network resources, and revokes all of its session and persistent network approvals without deleting its file.
 - **Reload All** reloads all enabled scripts.
 
-Missing registered scripts have their registry entries removed automatically, so a later unrelated file cannot silently inherit their enabled state. Bundled examples remain available in the Scripts folder but are not registered until the user selects one with **Load**, starting with `getting-started.lua`.
+Missing registered scripts have their registry entries removed automatically, so a later unrelated file cannot silently inherit their enabled state. Unloading xValiant is respected and does not cause Kyros to re-enable it while an existing registry remains. Other bundled examples remain available in the Scripts folder but are not registered until the user selects one with **Load**, starting with `getting-started.lua`.
 
 ## Output and sending
 
