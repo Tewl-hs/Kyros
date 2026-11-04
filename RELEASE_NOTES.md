@@ -4,6 +4,7 @@ Released November 3, 2026.
 
 ### Added
 
+- Lua scripts can create UTF-8 text files and nested directories inside an identity-isolated directory under `Scripts/Data` through `file.write`, `append`, `read`, `exists`, `mkdir`, `list`, and `delete`. JSON-compatible Lua hash tables and arrays round-trip through `file.write_table` and `file.read_table`; traversal, reparse points, executable/script extensions, and excessive file counts or sizes are blocked.
 - Lua scripts can use `input(line)` or `input(target, line)` to process client commands and invoke Lua aliases/macros through the normal Kyros input pipeline. Shared and script variables, built-in identifiers, command functions, positional macro identifiers, multiline expansions, and window context are preserved; recursion is bounded and `/lua` is blocked directly and after every expansion.
 - IRCv3-capable servers can now enrich nicklist members with optional account name, account identifier, real name, split username/hostname, away message, and bot status. Kyros consumes extended JOIN, `ACCOUNT`, `CHGHOST`, `SETNAME`, away-notify, WHO bot flags, and userhost-in-names data; unavailable fields remain null on traditional IRC servers.
 - Lua receives dedicated `extended_join`, `account`, `chghost`, and `setname` events in addition to the lossless generic `irc` event and enriched member snapshots.

@@ -446,6 +446,50 @@ Client variables are shared by all scripts and survive application restarts. Set
 
 Use the name without `${}` in `/set`; `${name}` is how the value is inserted into a `//command`. Values entered with `/set` are stored as text, which preserves exactly what was typed.
 
+## Sandboxed text files
+
+Each script has a private directory under `<Kyros folder>\Scripts\Data`. The
+directory name combines the script filename with an identity hash, so scripts
+with different identities cannot overwrite one another. Paths passed to the
+`file` API are relative to that private directory and may contain nested
+subdirectories:
+
+```lua
+file.mkdir("reports/daily")
+file.write("reports/daily/status.txt", "Started")
+file.append("reports/daily/status.txt", "\nFinished")
+
+local text = file.read("reports/daily/status.txt") -- nil when missing
+local exists = file.exists("reports/daily/status.txt")
+local names = file.list("reports", true)           -- recursive
+local deleted = file.delete("reports/daily/status.txt")
+```
+
+`file.write()` creates missing parent directories and replaces the file;
+`file.append()` creates the file when needed. Text is strict UTF-8. Scripts may
+create `.txt`, `.log`, `.json`, `.csv`, `.tsv`, `.md`, `.ini`, `.cfg`, `.conf`,
+`.xml`, `.yaml`, and `.yml` files. Absolute paths, `.`/`..` segments, reparse
+points, and executable or script extensions are rejected. A script may store up
+to 256 files, 1 MiB per file, and 8 MiB total.
+
+JSON-compatible Lua tables can be saved and restored directly:
+
+```lua
+file.write_table("state/users.json", {
+    owner = "Tewl",
+    enabled = true,
+    users = { "Alice", "Bob" }
+})
+
+local state = file.read_table("state/users.json")
+```
+
+`file.write_table()` requires a `.json` filename and uses the same one-MiB and
+64-level limits as `json.encode()`. `file.read_table()` returns `nil` when the
+file does not exist. JSON objects become string-keyed Lua hash tables and JSON
+arrays become one-based Lua arrays. Functions, userdata, non-finite numbers,
+and cyclic or excessively nested tables cannot be serialized.
+
 Lua scripts can use the same shared variables:
 
 ```lua
