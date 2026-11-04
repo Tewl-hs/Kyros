@@ -1,9 +1,11 @@
 # Kyros 1.1.4 Release Notes
 
-Released November 3, 2026.
+Released November 4, 2026.
 
 ### Added
 
+- The portable package includes `bad-word-moderation.lua`, a per-channel example opened with `//badwords <channel>` or `//badwords` from a channel window. It stores channel-specific phrases and options under its isolated `Scripts/Data` directory, matches control-stripped whole words and phrases, supports warn-first or immediate ban/kick behavior, expires temporary bans, checks channel rank, and rate-limits moderation actions.
+- Lua dialogs now support checkboxes, enabled state, explicit control widths and margins, row alignment, checkbox reads and updates, and live `changed` events for checkboxes and text boxes.
 - Lua scripts can create UTF-8 text files and nested directories inside an identity-isolated directory under `Scripts/Data` through `file.write`, `append`, `read`, `exists`, `mkdir`, `list`, and `delete`. JSON-compatible Lua hash tables and arrays round-trip through `file.write_table` and `file.read_table`; traversal, reparse points, executable/script extensions, and excessive file counts or sizes are blocked.
 - Lua scripts can use `input(line)` or `input(target, line)` to process client commands and invoke Lua aliases/macros through the normal Kyros input pipeline. Shared and script variables, built-in identifiers, command functions, positional macro identifiers, multiline expansions, and window context are preserved; recursion is bounded and `/lua` is blocked directly and after every expansion.
 - IRCv3-capable servers can now enrich nicklist members with optional account name, account identifier, real name, split username/hostname, away message, and bot status. Kyros consumes extended JOIN, `ACCOUNT`, `CHGHOST`, `SETNAME`, away-notify, WHO bot flags, and userhost-in-names data; unavailable fields remain null on traditional IRC servers.
@@ -14,6 +16,8 @@ Released November 3, 2026.
 
 ### Changed
 
+- Lua dialogs are fixed-size and cannot be resized, minimized, or maximized. Their title-bar close control now matches the main window, and dialog buttons enforce comfortable horizontal and vertical text padding.
+- xValiant no longer gives `/LUSERS` numerics special presentation; replies 251–255 and 265–266 use the same generic numeric display as other unhandled numerics.
 - Fresh portable installations now register and load the bundled `xvaliant-theme.lua` automatically, and existing version-1 script registries receive it through a one-time migration. Unloading xValiant afterward is respected; provider scripts remain excluded from the public package.
 - IRCv3 typing-indicator `TAGMSG` traffic is muted from the Server transcript while remaining available in the Raw window. Other unsupported non-numeric commands receive a readable default fallback, a cancelable Lua `unsupported` event, and xValiant formatting.
 - Existing Lua event fields and mIRC-style `e:get(...)` token positions remain compatible when incoming lines contain IRCv3 tags.

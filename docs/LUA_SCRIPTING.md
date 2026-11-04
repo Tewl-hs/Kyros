@@ -795,7 +795,7 @@ end, {
 
 ## Dialogs
 
-Open a modeless dialog by providing its settings, controls, and one event function:
+Open a fixed-size, modeless dialog by providing its settings, controls, and one event function. Lua dialogs are intentionally not resizable, minimizable, or maximizable:
 
 ```lua
 local window
@@ -804,9 +804,6 @@ window = dialog.open({
     title = "Greeting",
     width = 460,
     height = 320,
-    resizable = true,
-    minimizable = false,
-    maximizable = false,
     controls = {
         { type = "label", text = "Enter a nickname:" },
         { type = "textbox", id = "nickname", text = "" },
@@ -841,11 +838,13 @@ Available controls:
 - `label` — wrapped primary text. Supports `text` and optional `id`.
 - `status` — wrapped secondary text. Supports `text` and optional `id`.
 - `textbox` — editable single-line text. Supports `id` and `text`.
+- `checkbox` — checkable option. Supports `id`, `text`, and `checked`; raises `changed`.
 - `button` — clickable button. Supports `id` and `text`; raises `click`.
 - `list` — selectable list. Supports `id`, `items`, and `height`; raises `selection_changed` and raises `activate` on double-click.
 - `row` — places nested `controls` horizontally with buttons aligned to the right.
 
-Every control accepts `margin_bottom`. Controls that need to be read or changed should have a unique `id`.
+Every control accepts `margin_left`, `margin_top`, `margin_right`, and `margin_bottom`. Controls that need to be read or changed should have a unique `id`.
+Controls also accept optional `width` and `enabled` values. Rows accept `align` as `left`, `center`, `right`, or `stretch`. Dialog sizes are fixed; resize, minimize, and maximize settings are intentionally unsupported.
 
 Dialog functions:
 
@@ -857,6 +856,10 @@ dialog.set_items(window, "results", { "one", "two", "three" })
 local selected = dialog.selection(window, "results")
 print(selected.index) -- one-based; 0 means no selection
 print(selected.text)
+
+local enabled = dialog.get_checked(window, "enabled")
+dialog.set_checked(window, "enabled", true)
+dialog.set_enabled(window, "remove", false)
 
 dialog.close(window)
 ```

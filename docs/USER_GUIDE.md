@@ -101,6 +101,8 @@ The same lifecycle operations are available from any input box. Use `/lua load s
 
 Only load scripts you trust. Scripts are sandboxed, but they can send IRC commands and messages on your behalf.
 
+The portable package includes `bad-word-moderation.lua` as a dialog and persistent-table example. After loading it, enter `//badwords <channel>` from any window, or `//badwords` in a channel window. Each channel has its own phrase list, warning and ban/kick choices, and temporary-ban duration. Matching uses control-stripped whole words and phrases, so a phrase such as `ass` does not match `bass`. The script avoids users with channel rank above voice, requires your own rank to be above voice before banning or kicking, and rate-limits repeated actions. IRC operator status is not queried separately, so the server remains authoritative when that status is otherwise unavailable.
+
 See [Lua Scripting Guide](LUA_SCRIPTING.md) for the complete introduction.
 
 ## Troubleshooting

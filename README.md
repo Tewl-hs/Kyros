@@ -1,6 +1,6 @@
 # Kyros IRC Client
 
-Kyros is a Windows IRC client with IRCv3 capability negotiation, configurable server profiles, connection automation, themes, and sandboxed Lua scripting.
+Kyros is a Windows IRC client with IRCv3 capability negotiation, configurable server profiles, connection automation, themes, enriched nicklists, and sandboxed Lua scripting with fixed-size modeless dialogs and identity-isolated data storage.
 
 ## Development status
 
@@ -29,7 +29,7 @@ If the **Unblock** option is not present, Windows has not marked that file as bl
 
 The status area reports connection failures. A pending connection can be cancelled with the same toolbar button. Kyros times out an unreachable connection after 15 seconds.
 
-See [User Guide](docs/USER_GUIDE.md) for normal client use and [Lua Scripting Guide](docs/LUA_SCRIPTING.md) for scripts, aliases, variables, and command functions.
+See [User Guide](docs/USER_GUIDE.md) for normal client use and [Lua Scripting Guide](docs/LUA_SCRIPTING.md) for scripts, aliases, variables, command functions, safe data files, and dialogs. The portable package also includes `bad-word-moderation.lua`, a configurable per-channel moderation example opened with `//badwords <channel>`.
 
 ## Tester feedback
 
