@@ -63,6 +63,12 @@ Unknown single-slash commands are sent to the IRC server. Never paste commands f
 
 The Raw window appears directly below Server and above the channel list. Kyros remembers whether it is enabled between sessions. While enabled, it displays every IRC protocol line before normal parsing, using `→` for incoming traffic and `←` for outgoing traffic. Its `/log [on|off]` command writes daily logs named `raw.YYYY-MM-DD.log` in the `Log` folder.
 
+### IRCv3 servers
+
+The built-in IRC provider automatically asks the server which IRCv3 capabilities it supports and enables the compatible capabilities Kyros understands. On capable servers this adds server timestamps, account and identity updates, live away status, complete membership prefixes, and richer nicklist data. Traditional IRC servers continue to work without these additions.
+
+When a server supplies live away notifications, away users are shown in the nicklist with the secondary gray text color and return to the normal color when they are here again. IRCv3 typing notifications are intentionally not shown in the Server transcript; they remain available in the Raw window for diagnostics.
+
 ### Input formatting shortcuts
 
 Channel, private-message, and server input boxes accept IRC formatting controls directly: **Ctrl+B** inserts bold, **Ctrl+K** color, **Ctrl+I** or **Ctrl+G** italic, **Ctrl+R** reverse, **Ctrl+U** underline, and **Ctrl+O** reset. Enter color digits immediately after Ctrl+K when needed.

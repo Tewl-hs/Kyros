@@ -1,6 +1,6 @@
 # Kyros IRC Client
 
-Kyros is a Windows IRC client with configurable server profiles, connection automation, themes, and sandboxed Lua scripting.
+Kyros is a Windows IRC client with IRCv3 capability negotiation, configurable server profiles, connection automation, themes, and sandboxed Lua scripting.
 
 ## Development status
 

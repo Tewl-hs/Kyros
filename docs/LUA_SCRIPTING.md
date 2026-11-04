@@ -219,7 +219,10 @@ end
 
 Each channel provides `name`, `topic`, `modes`, `member_count`,
 `addresses_complete`, and `members`. Each member provides `name`, `address`,
-`prefix`, `modes`, and `away`. `address` is `nil` until the server supplies it.
+`username`, `hostname`, `account`, `account_id`, `real_name`, `away`,
+`away_message`, `bot`, `prefix`, and `modes`. IRCv3 identity values remain
+`nil` until a capable server supplies them; traditional IRC and custom providers
+do not receive invented placeholder values.
 The `modes` array contains the server-negotiated member mode letters rather
 than assuming specific IRC prefixes.
 
@@ -282,6 +285,14 @@ window. Its default display is `![server]: message`.
 | `connect` | Runs after the IRC connection is established. It has no meaningful event argument. |
 | `disconnect` | Runs when the IRC connection closes. It has no meaningful event argument. |
 | `raw` | Observes every incoming raw IRC line before specialized routing. Its callback receives the line directly as a string. |
+| `irc` | Receives every incoming line as a parsed IRC/IRCv3 event. Provides `raw`, `line`, `command`, one-based `params`/`parameters`, `trailing`, `tags`, `prefix`, `source`, `nick`, `account`, and `server_time`. Unknown and vendor-specific tags are preserved in `e.tags`. |
+| `away` | Runs when IRCv3 `away-notify` marks a user away. Provides `nick`, `address`, `away = true`, `here = false`, and `message`. |
+| `unaway` | Runs when IRCv3 `away-notify` marks a user here again. Provides `nick`, `address`, `away = false`, `here = true`, and an empty `message`. |
+| `extended_join` | Runs when an IRCv3 extended JOIN supplies identity metadata. Provides `nick`, `channel`, `account`, `account_id`, and `real_name`. |
+| `account` | Runs for an IRCv3 account-notify change. Provides `nick`, `address`, `account`, `account_id`, and `logged_in`; `account` is `nil` when the user logs out. |
+| `chghost` | Runs when IRCv3 changes a user's username or hostname. Provides `nick`, `username`, `hostname`, and the combined `address`. |
+| `setname` | Runs when IRCv3 changes a user's real name. Provides `nick` and `real_name`. |
+| `unsupported` | Runs for a non-numeric IRC/IRCv3 command which Kyros does not handle. Provides `command`, `source`, `target`, one-based `params`/`parameters`, `tags`, and the original `line`/`data`; canceling replaces the default server-window fallback. Typing-indicator `TAGMSG` traffic is intentionally excluded and remains visible only in Raw. |
 | `numeric` | Runs for every numeric reply, including replies consumed by features such as LIST and MOTD. Canceling it suppresses normal display handling only. |
 | `server_line` | Runs for protocol lines considered for the server/status transcript. Lines consumed by an earlier dedicated feature may not reach it. |
 | `ping` | Runs when an incoming `PING` line is considered for display. Canceling it does not affect protocol handling. |
@@ -305,6 +316,20 @@ window. Its default display is `![server]: message`.
 | `ctcp_reply` | Runs for received CTCP replies and automatic replies sent by Kyros. |
 
 Except for `error`, `theme_changed`, `connect`, `disconnect`, and `raw`, these events are cancelable with `e.prevent_default()`. Cancellation suppresses Kyros's normal transcript presentation; it does not undo network activity or internal state updates.
+
+The `irc` event is the lossless protocol event and is observational (not cancelable). For example:
+
+```lua
+irc.on("irc", function(e)
+    if e.command == "TOPIC" then
+        print(e.params[1] .. " -> " .. e.params[2])
+        print(e.tags["time"] or "no server time")
+        print(e.tags["account"] or "no account")
+    end
+end)
+```
+
+`e.params` is one-based and contains the IRC middle and trailing parameters in wire order. `e.tags` preserves all tag names, including `draft/...`, client-only `+...`, and vendor names such as `example.org/...`; valueless tags have an empty-string value. Kyros does not require or interpret a particular server vendor's tag namespace.
 
 The `theme_changed` event runs only when the selected application theme actually changes, not when Kyros reapplies font resources for the current theme. The independent IRC palette does not trigger this event. `e.theme` contains the newly applied theme name and `e.previous_theme` contains the prior theme name:
 

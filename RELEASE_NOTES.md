@@ -1,3 +1,35 @@
+# Kyros 1.1.4 Release Notes
+
+Released November 3, 2026.
+
+### Added
+
+- IRCv3-capable servers can now enrich nicklist members with optional account name, account identifier, real name, split username/hostname, away message, and bot status. Kyros consumes extended JOIN, `ACCOUNT`, `CHGHOST`, `SETNAME`, away-notify, WHO bot flags, and userhost-in-names data; unavailable fields remain null on traditional IRC servers.
+- Lua receives dedicated `extended_join`, `account`, `chghost`, and `setname` events in addition to the lossless generic `irc` event and enriched member snapshots.
+- IRCv3 `away-notify` and WHO presence flags now update nicklist presence live; away nicknames are shown in the secondary gray text color and return to the normal color when here. Lua receives distinct `away` and `unaway` events.
+- The native IRC connection now discovers IRCv3 support with `CAP LS 302`, handles multiline capability lists, and negotiates supported standard capabilities without depending on a particular IRC server implementation.
+- Lua scripts can observe every incoming IRC or IRCv3 message through the lossless `irc` event, including the command, ordered parameters, prefix fields, trailing parameter, and all standard, draft, client-only, and vendor-specific message tags.
+
+### Changed
+
+- IRCv3 typing-indicator `TAGMSG` traffic is muted from the Server transcript while remaining available in the Raw window. Other unsupported non-numeric commands receive a readable default fallback, a cancelable Lua `unsupported` event, and xValiant formatting.
+- Existing Lua event fields and mIRC-style `e:get(...)` token positions remain compatible when incoming lines contain IRCv3 tags.
+- Custom providers that inject ordinary IRC or IRCv3 through `handle:irc(line)` use the same parser and Lua event contract as native IRC connections. Providers retain control of capability negotiation on sockets they own.
+- The bundled Buzzen adapter preserves IRCv3 message tags while translating IRCWX traffic into canonical IRC.
+- The bundled xValiant theme ignores the leading IRCv3 tag section only for its legacy token calculations while retaining the original raw line for scripts.
+
+### Fixed
+
+- Direct-drawn transcripts now refresh their default channel, private-message, and server foreground brushes and rebuild cached line layouts when switching themes, preventing Ember's warm foreground from remaining after returning to Dark.
+- Nicklists now split `userhost-in-names` entries into their nickname and `user@host` address while retaining every `multi-prefix` rank, allowing later WHO replies and live membership changes to match the correct user.
+- IRC registration writes are serialized so adjacent `CAP`, `NICK`, `USER`, and `CAP END` lines cannot overlap on TLS streams and leave capability negotiation unfinished.
+- Kyros recovers from a previously persisted invalid nickname by selecting a valid username-based fallback before registration.
+- Tagged registration and channel-state numerics no longer shift legacy parser fields, which could prevent Kyros from recognizing its own nickname, processing names lists, or opening a joined channel window.
+- Tagged numerics no longer shift xValiant theme parameter positions or break WHOIS idle-time parsing.
+- Valueless IRCv3 tags remain discoverable in Lua instead of disappearing as `nil` table entries.
+
+---
+
 # Kyros 1.1.3 Release Notes
 
 Released November 3, 2026.
