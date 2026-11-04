@@ -4,6 +4,7 @@ Released November 3, 2026.
 
 ### Added
 
+- Lua scripts can use `input(line)` or `input(target, line)` to process client commands and invoke Lua aliases/macros through the normal Kyros input pipeline. Shared and script variables, built-in identifiers, command functions, positional macro identifiers, multiline expansions, and window context are preserved; recursion is bounded and `/lua` is blocked directly and after every expansion.
 - IRCv3-capable servers can now enrich nicklist members with optional account name, account identifier, real name, split username/hostname, away message, and bot status. Kyros consumes extended JOIN, `ACCOUNT`, `CHGHOST`, `SETNAME`, away-notify, WHO bot flags, and userhost-in-names data; unavailable fields remain null on traditional IRC servers.
 - Lua receives dedicated `extended_join`, `account`, `chghost`, and `setname` events in addition to the lossless generic `irc` event and enriched member snapshots.
 - IRCv3 `away-notify` and WHO presence flags now update nicklist presence live; away nicknames are shown in the secondary gray text color and return to the normal color when here. Lua receives distinct `away` and `unaway` events.

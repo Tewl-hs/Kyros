@@ -28,6 +28,28 @@ send("JOIN #example")
 
 `send()` sends raw IRC protocol text without a trailing line break. Scripts can act as the user, so do not load untrusted scripts.
 
+Use `input()` to process text through Kyros exactly like input-box text instead of
+sending raw IRC:
+
+```lua
+input("/join ${room}")                    -- Active window context
+input("#staff", "/say Hello {nickname}") -- Specific open conversation
+input("//announce ${greeting}")           -- Lua alias or macro
+```
+
+`input(line)` uses the active Server, channel, or private-message context.
+`input(target, line)` accepts `@server`, `@raw`, `@active`, or the exact name of
+an open channel or private-message window. It processes shared and script
+`${variables}`, built-in `{identifiers}`, registered command functions, aliases,
+macros, positional macro identifiers, and multiline macro results in the same
+order as typed input. Each input must be one non-empty line of at most 32 KiB.
+Nested `input()` and macro/alias execution is limited to eight levels.
+
+For safety, Lua-originated input can never execute `/lua`, including case or
+whitespace variations and `/lua` lines produced by variables, command functions,
+aliases, or macros. Scripts cannot load, reload, or unload themselves or other
+scripts. Use `send()` when raw IRC protocol output is intended.
+
 `echo` routes by window kind rather than guessing from duplicate names:
 
 ```lua
