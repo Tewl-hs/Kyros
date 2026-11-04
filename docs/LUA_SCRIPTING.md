@@ -223,6 +223,10 @@ Each channel provides `name`, `topic`, `modes`, `member_count`,
 `away_message`, `bot`, `prefix`, and `modes`. IRCv3 identity values remain
 `nil` until a capable server supplies them; traditional IRC and custom providers
 do not receive invented placeholder values.
+Channel identifiers are never display-normalized for Lua. A channel named `##`
+is returned as `##`, and repeated-prefix names such as `###channel` remain
+complete in snapshots, event `channel`/`target` fields, active-window context,
+and `echo`, `msg`, `say`, and `action` routing.
 The `modes` array contains the server-negotiated member mode letters rather
 than assuming specific IRC prefixes.
 

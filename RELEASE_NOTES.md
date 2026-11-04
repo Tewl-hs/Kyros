@@ -22,6 +22,7 @@ Released November 3, 2026.
 
 - Direct-drawn transcripts now refresh their default channel, private-message, and server foreground brushes and rebuild cached line layouts when switching themes, preventing Ember's warm foreground from remaining after returning to Dark.
 - Nicklists now split `userhost-in-names` entries into their nickname and `user@host` address while retaining every `multi-prefix` rank, allowing later WHO replies and live membership changes to match the correct user.
+- Channel validation now accepts complete names made from repeated channel-prefix characters, including `##`, while rejecting a prefix with no name. Repeated `#` names retain distinct window identities and transcript log filenames instead of collapsing onto the same file, and Lua snapshots, events, context, and routing preserve the exact complete channel identifier.
 - IRC registration writes are serialized so adjacent `CAP`, `NICK`, `USER`, and `CAP END` lines cannot overlap on TLS streams and leave capability negotiation unfinished.
 - Kyros recovers from a previously persisted invalid nickname by selecting a valid username-based fallback before registration.
 - Tagged registration and channel-state numerics no longer shift legacy parser fields, which could prevent Kyros from recognizing its own nickname, processing names lists, or opening a joined channel window.
