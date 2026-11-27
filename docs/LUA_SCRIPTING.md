@@ -12,9 +12,9 @@ Scripts inside `<Kyros folder>\Scripts` are registered relative to the current K
 - **New** creates, registers, and loads a script under the main `Scripts` folder.
 - **Save** saves the selected file and reloads it if it is loaded.
 - **Unload** stops the script, removes its registry entry and visible-list entry, closes its network resources, and revokes all of its session and persistent network approvals without deleting its file.
-- **Reload All** reloads all enabled scripts.
+- **Reload** reloads the selected script. It is disabled for the script backing the active provider.
 
-Missing registered scripts have their registry entries removed automatically, so a later unrelated file cannot silently inherit their enabled state. Unloading xValiant is respected and does not cause Kyros to re-enable it while an existing registry remains. Other bundled examples remain available in the Scripts folder but are not registered until the user selects one with **Load**, starting with `getting-started.lua`.
+Missing registered scripts have their registry entries removed automatically, so a later unrelated file cannot silently inherit their enabled state. Unloading xValiant is respected and does not cause Kyros to re-enable it while an existing registry remains. Kyros releases bundle no other Lua scripts; additional examples will be published separately in the repository's examples folder.
 
 ## Output and sending
 
@@ -986,6 +986,7 @@ Provider handle functions:
 - `handle:raw(text, outgoing)` publishes sanitized provider protocol traffic to the Raw window. Providers must not include access tokens, authorization headers, secrets, or other credentials. `outgoing` defaults to `false`.
 - `handle:irc(line)` injects one normalized incoming IRC protocol line into Kyros's native IRC parser. This is intended for protocol adapters that translate a custom or IRC-derived service into canonical IRC. The normal IRC event pipeline then owns conversation windows, nicklists, topics, numerics, Lua IRC events, and transcript themes. The line cannot contain CR, LF, or NUL and is limited to 32 KiB.
 - `handle:message(conversation, sender, text, direct)` publishes an incoming message. Set `direct` to `true` for a private-message window. Existing scripts may continue using this form.
+- `handle:presence(conversation, nickname, away[, message])` updates one member's presence in one provider conversation. Presence is conversation-scoped, so the same nickname may be away in one room and present in another. The optional away message is cleared when `away` is false.
 - `handle:message(conversation, sender, text, options)` may instead receive an options table with `direct`, `color` (`#RRGGBB`), `badges` (an array of short text labels), `action`, and `message_id`. Kyros renders colors and badge labels as transcript text, formats actions like `/me`, and suppresses duplicate non-empty message IDs.
 - `handle:open(conversation, direct)` opens a conversation. New channel conversations take focus; direct-message conversations open in the background.
 - `handle:close(conversation, direct)` closes a provider-owned conversation without sending another part request.

@@ -19,17 +19,22 @@ If Windows marks the extracted application as blocked:
 
 If the **Unblock** option is not present, Windows has not marked that file as blocked.
 
-## Tester quick start
+## Kyros 1.2.0 portable for Windows x64
 
-1. Extract the complete release folder. Do not run the executable from inside the ZIP.
-2. Start `Kyros.exe`.
-3. Open Settings and review the Connection and Identity tabs.
-4. Enter the IRC server, port, TLS setting, nickname, username, and real name.
-5. Close Settings and use the plug button to connect.
+Kyros 1.2.0 adds custom IRC endpoints, optional tray and direct-message notifications, per-room provider presence, and expanded Lua scripting and IRCv3 support. See the [changelog](RELEASE_NOTES.md), [wiki](https://github.com/Tewl-hs/Kyros/wiki), and [source repository](https://github.com/Tewl-hs/Kyros-Source).
+
+## Quick start
+
+1. Download the portable ZIP and its SHA-256 checksum from the [Kyros 1.2.0 release](https://github.com/Tewl-hs/Kyros/releases/tag/v1.2.0). Compare the checksum with the output of `Get-FileHash .\Kyros-v1.2.0-portable-win-x64.zip -Algorithm SHA256`.
+2. Extract the complete release folder. Do not run the executable from inside the ZIP.
+3. Start `Kyros.exe`.
+4. Open Settings and review the Connection and Identity tabs.
+5. Enter the IRC server, port, TLS setting, nickname, username, and real name.
+6. Close Settings and use the plug button to connect.
 
 The status area reports connection failures. A pending connection can be cancelled with the same toolbar button. Kyros times out an unreachable connection after 15 seconds.
 
-See [User Guide](docs/USER_GUIDE.md) for normal client use and [Lua Scripting Guide](docs/LUA_SCRIPTING.md) for scripts, aliases, variables, command functions, safe data files, and dialogs. The portable package also includes `bad-word-moderation.lua`, a configurable per-channel moderation example opened with `//badwords <channel>`.
+See [User Guide](docs/USER_GUIDE.md) for normal client use and [Lua Scripting Guide](docs/LUA_SCRIPTING.md) for scripts, aliases, variables, command functions, safe data files, and dialogs. Kyros releases bundle only the default `xvaliant-theme.lua`; additional Lua examples will be published separately in the repository's examples folder.
 
 ## Tester feedback
 

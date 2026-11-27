@@ -1,10 +1,12 @@
-# Kyros 1.1.4 Release Notes
+# Kyros 1.2.0 Release Notes
 
-Released November 4, 2026.
+Portable release prepared November 27, 2026.
 
 ### Added
 
-- The portable package includes `bad-word-moderation.lua`, a per-channel example opened with `//badwords <channel>` or `//badwords` from a channel window. It stores channel-specific phrases and options under its isolated `Scripts/Data` directory, matches control-stripped whole words and phrases, supports warn-first or immediate ban/kick behavior, expires temporary bans, checks channel rank, and rate-limits moderation actions.
+- The Options dialog has a Miscellaneous tab with opt-in minimize-to-tray behavior and opt-in direct-message notifications. Notification clicks restore Kyros and focus the matching conversation; double-clicking the tray icon restores the previous window state.
+- IRC connections can use remembered custom server, port, and TLS settings without creating a server profile.
+- Provider scripts can publish conversation-scoped member presence, allowing the same user to be away in one room and present in another.
 - Lua dialogs now support checkboxes, enabled state, explicit control widths and margins, row alignment, checkbox reads and updates, and live `changed` events for checkboxes and text boxes.
 - Lua scripts can create UTF-8 text files and nested directories inside an identity-isolated directory under `Scripts/Data` through `file.write`, `append`, `read`, `exists`, `mkdir`, `list`, and `delete`. JSON-compatible Lua hash tables and arrays round-trip through `file.write_table` and `file.read_table`; traversal, reparse points, executable/script extensions, and excessive file counts or sizes are blocked.
 - Lua scripts can use `input(line)` or `input(target, line)` to process client commands and invoke Lua aliases/macros through the normal Kyros input pipeline. Shared and script variables, built-in identifiers, command functions, positional macro identifiers, multiline expansions, and window context are preserved; recursion is bounded and `/lua` is blocked directly and after every expansion.
@@ -16,17 +18,31 @@ Released November 4, 2026.
 
 ### Changed
 
+- The connection status bar now follows the live connection and immediately reflects disconnected server selections. Successful IRC connections select their matching profile, while unmatched endpoints remain custom connections.
+- Saved-profile connection details are read-only in Options and must be changed through the profile editor. Custom connection details remain editable while disconnected and lock while connecting or connected.
+- Presented TLS certificates with validation failures now open an explicit warning showing the endpoint, validation errors, and SHA-256 fingerprint. User-approved exceptions are pinned to that exact server, port, and certificate.
+- Transcript nickname actions recognize Unicode and decorated display names when they exactly match a member in the room.
+- The Buzzen provider reads initial and live per-room away state from numerics 353, 821, and 822. Direct messages use channel-scoped WHISPER traffic while retaining one DM window per nickname and deterministic common-room routing.
+- Initial channel synchronization now always requests a background `WHO`, even when NAMES supplies every member address, so the WHO presence flags seed away status before IRCv3 `away-notify` reports later changes.
+- Servers advertising legacy `NAMESX` or `UHNAMES` through `005` are enabled with `PROTOCTL` when the equivalent IRCv3 capability was not negotiated.
+- Release packages now bundle only `xvaliant-theme.lua`. Additional Lua examples will be published separately in the public repository's examples folder.
 - Lua dialogs are fixed-size and cannot be resized, minimized, or maximized. Their title-bar close control now matches the main window, and dialog buttons enforce comfortable horizontal and vertical text padding.
 - xValiant no longer gives `/LUSERS` numerics special presentation; replies 251–255 and 265–266 use the same generic numeric display as other unhandled numerics.
 - Fresh portable installations now register and load the bundled `xvaliant-theme.lua` automatically, and existing version-1 script registries receive it through a one-time migration. Unloading xValiant afterward is respected; provider scripts remain excluded from the public package.
 - IRCv3 typing-indicator `TAGMSG` traffic is muted from the Server transcript while remaining available in the Raw window. Other unsupported non-numeric commands receive a readable default fallback, a cancelable Lua `unsupported` event, and xValiant formatting.
 - Existing Lua event fields and mIRC-style `e:get(...)` token positions remain compatible when incoming lines contain IRCv3 tags.
 - Custom providers that inject ordinary IRC or IRCv3 through `handle:irc(line)` use the same parser and Lua event contract as native IRC connections. Providers retain control of capability negotiation on sockets they own.
-- The bundled Buzzen adapter preserves IRCv3 message tags while translating IRCWX traffic into canonical IRC.
+- The source repository's Buzzen adapter preserves IRCv3 message tags while translating IRCWX traffic into canonical IRC.
 - The bundled xValiant theme ignores the leading IRCv3 tag section only for its legacy token calculations while retaining the original raw line for scripts.
 
 ### Fixed
 
+- IRC replies 305 and 306 now update your own away status.
+- The Tokyo Night theme supplies a default font size for the message input.
+- Startup failures can display the crash dialog before the main window exists.
+- The TLS certificate warning's acceptance button now uses the standard themed dialog-button surface instead of an accent-colored warning style.
+- Buzzen NAMES replies no longer turn status/profile markers with an empty nickname, such as `UMPN,`, into phantom nicklist users.
+- Transcript mouse hit-testing now measures complete Unicode text elements, so decorated nicknames containing supplementary-plane characters respond across the whole name.
 - Direct-drawn transcripts now refresh their default channel, private-message, and server foreground brushes and rebuild cached line layouts when switching themes, preventing Ember's warm foreground from remaining after returning to Dark.
 - Nicklists now split `userhost-in-names` entries into their nickname and `user@host` address while retaining every `multi-prefix` rank, allowing later WHO replies and live membership changes to match the correct user.
 - Channel validation now accepts complete names made from repeated channel-prefix characters, including `##`, while rejecting a prefix with no name. Repeated `#` names retain distinct window identities and transcript log filenames instead of collapsing onto the same file, and Lua snapshots, events, context, and routing preserve the exact complete channel identifier.
